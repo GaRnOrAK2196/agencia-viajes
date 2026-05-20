@@ -1,0 +1,2 @@
+GRANT SELECT, INSERT, UPDATE, DELETE ON db_hoteles.* TO 'user_hoteles'@'%';
+FLUSH PRIVILEGES;

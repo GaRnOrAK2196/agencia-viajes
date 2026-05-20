@@ -1,0 +1,11 @@
+flask
+flask-cors
+SQLAlchemy
+PyMySQL
+werkzeug
+requests
+# --- NUEVAS DEPENDENCIAS PARA 2FA ---
+pyotp
+qrcode
+pillow
+PyJWT

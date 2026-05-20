@@ -1,0 +1,2 @@
+GRANT SELECT, INSERT, UPDATE, DELETE ON db_aviones.* TO 'user_aviones'@'%';
+FLUSH PRIVILEGES;

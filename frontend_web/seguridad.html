@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="es" data-theme="light">
+  <head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+    <title>Seguridad - Agencia KIS</title>
+  </head>
+  <body>
+    <header class="container"><h1>🔐 Seguridad de la Cuenta</h1></header>
+    <nav class="container">
+        <ul><li>Agencia KIS</li></ul>
+        <ul><li><a href="index.html">Volver</a></li></ul>
+    </nav>
+    <main class="container">
+      <article>
+        <header>Autenticación de Dos Factores (2FA)</header>
+        
+        <div id="estado-activo" style="display: none; text-align: center; color: var(--pico-color-green-600);">
+            <h2 style="margin-bottom: 0;">✅ Protegido</h2>
+            <p>Tu autenticación de dos factores está <strong>activa</strong>.</p>
+            <small>Tu cuenta está segura contra accesos no autorizados.</small>
+        </div>
+
+        <div id="estado-inactivo">
+            <p>Aumenta la seguridad de tu cuenta usando Google Authenticator.</p>
+            <button id="btn-iniciar-setup" onclick="iniciarSetup()">Configurar 2FA</button>
+        </div>
+
+        <div id="setup-container" style="display: none; margin-top: 20px;">
+            <hr>
+            <h3>1. Escanea este código QR</h3>
+            <div style="text-align: center;">
+                <img id="qr-image" src="" alt="QR Code" style="border: 5px solid white;">
+            </div>
+            <h3>2. Ingresa el código de 6 dígitos</h3>
+            <input type="text" id="codigo-input" placeholder="Ej. 123456">
+            <button onclick="confirmar2FA()">Activar y Guardar</button>
+        </div>
+
+      </article>
+    </main>
+
+    <script>
+        // 1. LEEMOS EL ESTADO ACTUAL
+        const usuario = JSON.parse(localStorage.getItem('usuario_agencia'));
+        if(!usuario) window.location.href = 'login.html';
+
+        // 2. ACTUALIZAMOS LA VISTA AL CARGAR
+        actualizarVista();
+
+        function actualizarVista() {
+            const divActivo = document.getElementById('estado-activo');
+            const divInactivo = document.getElementById('estado-inactivo');
+
+            if (usuario.tiene_2fa) {
+                divActivo.style.display = 'block';
+                divInactivo.style.display = 'none';
+            } else {
+                divActivo.style.display = 'none';
+                divInactivo.style.display = 'block';
+            }
+        }
+
+        let tempSecret = '';
+
+        async function iniciarSetup() {
+            const res = await fetch('/api/agencia/2fa/setup', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ email: usuario.email })
+            });
+            const data = await res.json();
+            
+            document.getElementById('qr-image').src = data.qr_image;
+            tempSecret = data.secret;
+            document.getElementById('setup-container').style.display = 'block';
+            document.getElementById('btn-iniciar-setup').style.display = 'none';
+        }
+
+        async function confirmar2FA() {
+            const code = document.getElementById('codigo-input').value;
+            const res = await fetch('/api/agencia/2fa/enable', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    user_id: usuario.id,
+                    secret: tempSecret,
+                    code: code
+                })
+            });
+            
+            if(res.ok) {
+                alert("¡Excelente! Tu cuenta ahora es segura.");
+                
+                // 3. ACTUALIZAMOS LOCALSTORAGE EN TIEMPO REAL
+                usuario.tiene_2fa = true;
+                localStorage.setItem('usuario_agencia', JSON.stringify(usuario));
+                
+                // Recargamos la vista para mostrar la palomita verde
+                document.getElementById('setup-container').style.display = 'none';
+                actualizarVista();
+
+            } else {
+                alert("Código incorrecto.");
+            }
+        }
+    </script>
+  </body>
+</html>

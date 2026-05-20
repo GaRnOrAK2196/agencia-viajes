@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="es" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css" />
+    <title>DaLi - Inicio</title>
+
+    <style>
+      :root {
+        --pico-primary: #0069d9; /* Azul Principal */
+        --pico-primary-background: #0056b3; /* Azul Oscuro (Hover) */
+        --pico-primary-underline: #0069d9;
+        --pico-border-radius: 0.5rem; /* Bordes más redondeados */
+      }
+      /* Sombras suaves para las tarjetas */
+      article {
+        box-shadow: 0 4px 10px rgba(0, 105, 217, 0.1);
+        border: 1px solid #e1eaf5;
+      }
+      /* Navbar con toque azul */
+      nav strong {
+        color: var(--pico-primary);
+        font-weight: 800;
+        letter-spacing: 1px;
+      }
+      h1,
+      h2,
+      h3 {
+        color: #0d2b52;
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="container">
+      <ul>
+        <li>
+          <hgroup
+            style="margin-bottom: 0; cursor: pointer"
+            onclick="window.location.href = 'index.html'">
+            <h1 style="font-size: 1.5rem; margin-bottom: 0">✈️ DaLi</h1>
+            <h2
+              style="font-size: 0.8rem; margin-bottom: 0; font-weight: normal">
+              Explora el mundo.
+            </h2>
+          </hgroup>
+        </li>
+      </ul>
+
+      <ul>
+        <li><a href="index.html" class="contrast">Buscar</a></li>
+
+        <li id="nav-gestion" style="display: none">
+          <a href="subidaServicios.html" class="secondary" id="link-gestion"
+            >Panel Gestión</a
+          >
+        </li>
+
+        <li id="nav-mis-reservas" style="display: none">
+          <a href="mis-reservas.html" class="secondary">Mis Reservas</a>
+        </li>
+        
+        <li><a id="nav-seguridad" href="seguridad.html" class="secondary">Seguridad</a></li>
+
+        <li id="nav-login">
+          <a href="login.html" role="button">Iniciar Sesión</a>
+        </li>
+        <li id="nav-logout" style="display: none">
+          <a href="#" role="button" class="outline contrast" onclick="logout()"
+            >Salir</a
+          >
+        </li>
+      </ul>
+    </nav>
+
+    <main class="container">
+      <article>
+        <header
+          style="background-color: #f0f7ff; border-bottom: 1px solid #dbeafe">
+          <strong style="color: #0069d9">🔍 Encuentra tu próximo viaje</strong>
+        </header>
+
+        <form id="form-busqueda">
+          <div class="grid">
+            <label for="origen">
+              Origen
+              <input
+                type="text"
+                id="origen"
+                name="origen"
+                placeholder="Ej. Guadalajara"
+                required
+                list="lista-origenes" />
+            </label>
+
+            <label for="destino">
+              Destino
+              <input
+                type="text"
+                id="destino"
+                name="destino"
+                placeholder="Ej. Cancún"
+                required
+                list="lista-destinos" />
+            </label>
+          </div>
+
+          <label for="fecha">
+            Fecha de Ida
+            <input type="date" id="fecha" name="fecha" required />
+          </label>
+
+          <button type="submit">Buscar Servicios</button>
+        </form>
+
+        <datalist id="lista-origenes">
+          <option value="Guadalajara"></option>
+          <option value="Ciudad de México"></option>
+          <option value="Monterrey"></option>
+          <option value="Tijuana"></option>
+          <option value="Mérida"></option>
+        </datalist>
+
+        <datalist id="lista-destinos">
+          <option value="Cancún"></option>
+          <option value="Puerto Vallarta"></option>
+          <option value="Ciudad de México"></option>
+          <option value="Monterrey"></option>
+          <option value="Los Cabos"></option>
+          <option value="Guadalajara"></option>
+        </datalist>
+      </article>
+
+      <hr style="border-top: 2px dashed #dbeafe" />
+
+      <h3 style="margin-top: 1rem">Resultados Disponibles</h3>
+      <div id="resultados-busqueda">
+        <p style="text-align: center; color: gray; margin-top: 2rem">
+          <em>Ingresa tus datos arriba para ver las mejores opciones.</em>
+        </p>
+      </div>
+    </main>
+
+    <footer class="container" style="text-align: center; margin-top: 2rem">
+      <small style="color: gray">DaLi Platform © 2025</small>
+    </footer>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const usuarioGuardado = localStorage.getItem("usuario_agencia");
+
+        const navLogin = document.getElementById("nav-login");
+        const navLogout = document.getElementById("nav-logout");
+        const navGestion = document.getElementById("nav-gestion");
+        const linkGestion = document.getElementById("link-gestion");
+        const navReservas = document.getElementById("nav-mis-reservas");
+        const navSeguridad = document.getElementById("nav-seguridad");
+
+        if (usuarioGuardado) {
+          const usuario = JSON.parse(usuarioGuardado);
+          navLogin.style.display = "none";
+          navLogout.style.display = "block";
+
+          if (usuario.tipo === "agencia" || usuario.tipo === "admin") {
+            navGestion.style.display = "block";
+            navReservas.style.display = "none";
+            linkGestion.textContent =
+              usuario.tipo === "admin" ? "Administración" : "Mi Agencia";
+          } else {
+            navGestion.style.display = "none";
+            navReservas.style.display = "block";
+            navSeguridad.style.display = "block";
+          }
+        } else {
+          navLogin.style.display = "block";
+          navLogout.style.display = "none";
+          navGestion.style.display = "none";
+          navReservas.style.display = "none";
+          navSeguridad.style.display = "none";
+        }
+      });
+
+      function logout() {
+        if (confirm("¿Seguro que deseas cerrar sesión?")) {
+          localStorage.removeItem("usuario_agencia");
+          window.location.reload();
+        }
+      }
+    </script>
+    <script src="app.js"></script>
+  </body>
+</html>

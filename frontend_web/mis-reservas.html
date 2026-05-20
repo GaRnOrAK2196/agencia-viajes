@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="es" data-theme="light">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+    <title>Mis Reservas - DaLi</title>
+    <style>
+      :root {
+        --pico-primary: #0069d9;
+        --pico-primary-background: #0056b3;
+        --pico-border-radius: 0.5rem;
+      }
+      nav strong { color: var(--pico-primary); }
+      
+      /* Estilo especial para tarjetas de reserva */
+      .reserva-card {
+        border-left: 5px solid var(--pico-primary);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      }
+    </style>
+  </head>
+  <body>
+    <header class="container">
+      <hgroup><h1>📅 Mis Viajes</h1><h2>Historial de tus reservaciones.</h2></hgroup>
+    </header>
+
+    <nav class="container">
+      <ul><li><strong>DaLi</strong></li></ul>
+      <ul>
+        <li><a href="index.html" class="secondary">Inicio / Buscar</a></li>
+        <li id="nav-logout"><a href="#" role="button" class="outline contrast" onclick="logout()">Salir</a></li>
+      </ul>
+    </nav>
+
+    <main class="container">
+      <div id="lista-reservas">
+        <p aria-busy="true">Cargando tus reservas...</p>
+      </div>
+    </main>
+
+    <script>
+      function logout() {
+        if(confirm("¿Cerrar sesión?")) {
+            localStorage.removeItem('usuario_agencia');
+            window.location.href = 'index.html';
+        }
+      }
+
+      document.addEventListener('DOMContentLoaded', async () => {
+        const usuarioGuardado = localStorage.getItem('usuario_agencia');
+        if (!usuarioGuardado) { window.location.href = 'login.html'; return; }
+        
+        const usuario = JSON.parse(usuarioGuardado);
+        const container = document.getElementById('lista-reservas');
+
+        try {
+            const res = await fetch(`/api/agencia/reservas/${usuario.email}`);
+            const reservas = await res.json();
+
+            if (reservas.length === 0) {
+                container.innerHTML = '<article style="text-align:center;">No tienes reservas activas. <br><a href="index.html">¡Planea tu viaje ahora!</a></article>';
+                return;
+            }
+
+            container.innerHTML = reservas.map(r => `
+                <article class="reserva-card">
+                    <header>
+                        <strong>#${r.id}</strong> | <small>${new Date(r.fecha).toLocaleDateString()}</small>
+                        <span style="float: right; font-size: 0.8em; background: #e1eaf5; padding: 2px 8px; border-radius: 4px; color: #0069d9;">${r.tipo.toUpperCase()}</span>
+                    </header>
+                    <h4 style="margin-bottom: 0;">${r.detalles}</h4>
+                    <footer style="margin-top: 1rem;">
+                       <small style="color: #28a745;">✅ Confirmado</small>
+                    </footer>
+                </article>
+            `).join('');
+
+        } catch (e) {
+            container.innerHTML = '<p style="color: red">Error al cargar reservas.</p>';
+            console.error(e);
+        }
+      });
+    </script>
+  </body>
+</html>

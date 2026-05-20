@@ -1,0 +1,145 @@
+services:
+  
+  # 1. FRONTEND / GATEWAY (Modificado)
+  frontend:
+    image: nginx:alpine
+    ports:
+      - "8080:80"
+      - "8443:443"   # NUEVO: Puerto HTTPS
+    volumes:
+      - ./frontend_web:/usr/share/nginx/html
+      - ./nginx_config/default.conf:/etc/nginx/conf.d/default.conf
+      - ./certs:/etc/nginx/ssl  # NUEVO: Montamos los certificados aquí
+    depends_on: # Le decimos que espere a que las APIs estén listas
+      - api_agencia
+      - api_aviones
+      - api_hoteles
+      - api_buses
+
+  # 2. API DE AGENCIA (¡Nueva!)
+  api_agencia:
+    build: ./api_agencia
+    environment: # Pasamos las credenciales de la BBDD a la API
+      DB_HOST: db_agencia
+      DB_USER: user_agencia
+      DB_PASSWORD: pass_agencia
+      DB_NAME: db_agencia
+    depends_on:
+      - db_agencia # La API depende de que su BBDD esté lista
+
+  # 3. API DE AVIONES (Modificada)
+  api_aviones:
+    build: ./api_aviones
+    # Ya no necesitamos 'ports', Nginx lo maneja
+    environment:
+      DB_HOST: db_aviones
+      DB_USER: user_aviones
+      DB_PASSWORD: pass_aviones
+      DB_NAME: db_aviones
+    depends_on:
+      - db_aviones
+
+  # 4. API DE HOTELES (Modificada)
+  api_hoteles:
+    build: ./api_hoteles
+    environment:
+      DB_HOST: db_hoteles
+      DB_USER: user_hoteles
+      DB_PASSWORD: pass_hoteles
+      DB_NAME: db_hoteles
+    depends_on:
+      - db_hoteles
+
+  # 5. API DE BUSES (Modificada)
+  api_buses:
+    build: ./api_buses
+    environment:
+      DB_HOST: db_buses
+      DB_USER: user_buses
+      DB_PASSWORD: pass_buses
+      DB_NAME: db_buses
+    depends_on:
+      - db_buses
+
+  # --- SECCIÓN DE BASES DE DATOS (¡Todo esto es nuevo!) ---
+
+  # 6. Base de Datos de AGENCIA (MAESTRO)
+  db_agencia:
+    image: mysql:8.0
+    command: --default-authentication-plugin=mysql_native_password --server-id=1 --log-bin=/var/lib/mysql/mysql-bin.log --binlog-do-db=db_agencia
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: db_agencia # Esto crea la DB, pero el script crea las tablas
+      MYSQL_USER: user_agencia
+      MYSQL_PASSWORD: pass_agencia
+      MYSQL_ROOT_PASSWORD: root_password_demo
+    volumes:
+      - db_data_agencia:/var/lib/mysql
+      # --- NUEVO: Script de inicio ---
+      - ./db_init/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  # --- REPLICA (MIRROR) ---
+  db_agencia_replica:
+    image: mysql:8.0
+    command: --default-authentication-plugin=mysql_native_password --server-id=2 --relay-log=/var/lib/mysql/mysql-relay-bin.log
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password_demo
+    volumes:
+      - db_data_agencia_replica:/var/lib/mysql
+      # --- NUEVO: Script de inicio (¡El mismo script!) ---
+      - ./db_init/init.sql:/docker-entrypoint-initdb.d/init.sql
+    depends_on:
+      - db_agencia
+
+  # 7. Base de Datos de AVIONES
+  db_aviones:
+    image: mysql:8.0
+    command: --default-authentication-plugin=mysql_native_password
+    environment:
+      MYSQL_DATABASE: db_aviones
+      MYSQL_USER: user_aviones
+      MYSQL_PASSWORD: pass_aviones
+      MYSQL_ROOT_PASSWORD: root_password_demo
+    volumes:
+      - db_data_aviones:/var/lib/mysql
+      # --- NUEVO: Script de privilegios ---
+      - ./db_init/init_aviones.sql:/docker-entrypoint-initdb.d/init_aviones.sql
+
+  # 8. Base de Datos de HOTELES
+  db_hoteles:
+    image: mysql:8.0
+    command: --default-authentication-plugin=mysql_native_password
+    environment:
+      MYSQL_DATABASE: db_hoteles
+      MYSQL_USER: user_hoteles
+      MYSQL_PASSWORD: pass_hoteles
+      MYSQL_ROOT_PASSWORD: root_password_demo
+    volumes:
+      - db_data_hoteles:/var/lib/mysql
+      # --- NUEVO: Script de privilegios ---
+      - ./db_init/init_hoteles.sql:/docker-entrypoint-initdb.d/init_hoteles.sql
+
+  # 9. Base de Datos de BUSES
+  db_buses:
+    image: mysql:8.0
+    command: --default-authentication-plugin=mysql_native_password
+    environment:
+      MYSQL_DATABASE: db_buses
+      MYSQL_USER: user_buses
+      MYSQL_PASSWORD: pass_buses
+      MYSQL_ROOT_PASSWORD: root_password_demo
+    volumes:
+      - db_data_buses:/var/lib/mysql
+      # --- NUEVO: Script de privilegios ---
+      - ./db_init/init_buses.sql:/docker-entrypoint-initdb.d/init_buses.sql
+
+# --- VOLÚMENES --- | Declaramos los volúmenes para que Docker guarde los datos
+volumes:
+  db_data_agencia:
+  db_data_agencia_replica:
+  db_data_aviones:
+  db_data_hoteles:
+  db_data_buses:
