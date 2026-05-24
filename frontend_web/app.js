@@ -1,15 +1,25 @@
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener("DOMContentLoaded", () => {
+  const formBusqueda = document.getElementById("form-busqueda");
+  const resultadosContainer = document.getElementById("resultados-busqueda");
 
-  const formBusqueda = document.getElementById('form-busqueda');
-  const resultadosContainer = document.getElementById('resultados-busqueda');
+  function escapeHTML(str) {
+    if (!str) return "";
+    return str
+      .toString()
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
 
   // El 'escuchador' principal sigue siendo 'async'
-  formBusqueda.addEventListener('submit', async (event) => {
+  formBusqueda.addEventListener("submit", async (event) => {
     event.preventDefault();
 
-    const origen = document.getElementById('origen').value.trim();
-    const destino = document.getElementById('destino').value.trim();
-    const fechaInput = document.getElementById('fecha').value;
+    const origen = document.getElementById("origen").value.trim();
+    const destino = document.getElementById("destino").value.trim();
+    const fechaInput = document.getElementById("fecha").value;
 
     // Validación: Origen diferente a destino
     if (origen.toLowerCase() === destino.toLowerCase()) {
@@ -23,7 +33,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const hoy = new Date();
     hoy.setHours(0, 0, 0, 0);
     // Ajustamos la fecha seleccionada para compensar la zona horaria (truco KIS)
-    const fechaSeleccionadaAjustada = new Date(fechaSeleccionada.getTime() + fechaSeleccionada.getTimezoneOffset() * 60000);
+    const fechaSeleccionadaAjustada = new Date(
+      fechaSeleccionada.getTime() +
+        fechaSeleccionada.getTimezoneOffset() * 60000,
+    );
 
     if (fechaSeleccionadaAjustada < hoy) {
       alert("La fecha del viaje debe de ser mayor a la actual.");
@@ -32,25 +45,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
     console.log("Búsqueda iniciada...");
 
-    resultadosContainer.innerHTML = '<p>Buscando servicios...</p>';
+    resultadosContainer.innerHTML = "<p>Buscando servicios...</p>";
 
     // 1. LLAMAMOS A LAS 3 APIS EN PARALELO
     // Promise.all() ejecuta todas las promesas (peticiones) al mismo tiempo.
     // Espera a que todas terminen.
     try {
-      const [resultadosVuelos, resultadosHoteles, resultadosBuses] = await Promise.all([
-        llamarApiVuelos(),
-        llamarApiHoteles(),
-        llamarApiBuses()
-      ]);
+      const [resultadosVuelos, resultadosHoteles, resultadosBuses] =
+        await Promise.all([
+          llamarApiVuelos(),
+          llamarApiHoteles(),
+          llamarApiBuses(),
+        ]);
 
       // 2. COMBINAMOS LOS RESULTADOS
       // Usamos el "spread operator" (...) para juntar los 3 arrays en uno solo
-      const todosLosResultados = [...resultadosVuelos, ...resultadosHoteles, ...resultadosBuses];
+      const todosLosResultados = [
+        ...resultadosVuelos,
+        ...resultadosHoteles,
+        ...resultadosBuses,
+      ];
 
       // 3. MOSTRAMOS TODO
       mostrarResultados(todosLosResultados);
-
     } catch (error) {
       // Este error solo saltará si una de las APIs falla de forma crítica
       console.error("Error general al consultar APIs:", error);
@@ -61,12 +78,11 @@ document.addEventListener('DOMContentLoaded', () => {
   // --- NUESTRAS 3 FUNCIONES DE API ---
 
   async function llamarApiVuelos() {
-    // CAMBIO: Ya no apuntamos a localhost:3000
-    const API_URL = '/api/vuelos';
+    const API_URL = "/api/vuelos";
+    const tokenJWT = localStorage.getItem("jwt_token");
     try {
-      const response = await fetch(API_URL);
-      // ...el resto de la función es idéntica...
-      if (!response.ok) throw new Error('Error en API Vuelos');
+      const response = await fetch(API_URL, { headers: tokenJWT ? { Authorization: `Bearer ${tokenJWT}` } : {},});
+      if (!response.ok) throw new Error("Error en API Vuelos");
       const data = await response.json();
       console.log("Datos recibidos de Vuelos:", data);
       return data;
@@ -77,12 +93,13 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   async function llamarApiHoteles() {
-    // CAMBIO:
-    const API_URL = '/api/hoteles';
+    const API_URL = "/api/hoteles";
+    const tokenJWT = localStorage.getItem("jwt_token");
     try {
-      const response = await fetch(API_URL);
-      // ...el resto es idéntico...
-      if (!response.ok) throw new Error('Error en API Hoteles');
+      const response = await fetch(API_URL, {
+        headers: tokenJWT ? { Authorization: `Bearer ${tokenJWT}` } : {},
+      });
+      if (!response.ok) throw new Error("Error en API Hoteles");
       const data = await response.json();
       console.log("Datos recibidos de Hoteles:", data);
       return data;
@@ -93,12 +110,13 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   async function llamarApiBuses() {
-    // CAMBIO:
-    const API_URL = '/api/buses';
+    const API_URL = "/api/buses";
+    const tokenJWT = localStorage.getItem("jwt_token");
     try {
-      const response = await fetch(API_URL);
-      // ...el resto es idéntico...
-      if (!response.ok) throw new Error('Error en API Buses');
+      const response = await fetch(API_URL, {
+        headers: tokenJWT ? { Authorization: `Bearer ${tokenJWT}` } : {},
+      });
+      if (!response.ok) throw new Error("Error en API Buses");
       const data = await response.json();
       console.log("Datos recibidos de Buses:", data);
       return data;
@@ -108,25 +126,24 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-
   /**
    * Esta función es la MISMA de antes.
    * No necesita cambiar, ya que solo se dedica a "pintar"
    * cualquier array de resultados que reciba.
    */
   function mostrarResultados(resultados) {
-    resultadosContainer.innerHTML = '';
+    resultadosContainer.innerHTML = "";
 
     if (resultados.length === 0) {
-      resultadosContainer.innerHTML = '<p>No se encontraron servicios para esta búsqueda.</p>';
+      resultadosContainer.innerHTML =
+        "<p>No se encontraron servicios para esta búsqueda.</p>";
       return;
     }
 
-    resultados.forEach(item => {
-
+    resultados.forEach((item) => {
       // 1. LÓGICA PARA HOTELES: Selector de Personas
-      let selectorPersonasHTML = '';
-      if (item.tipo.includes('Hotel')) {
+      let selectorPersonasHTML = "";
+      if (item.tipo.includes("Hotel")) {
         selectorPersonasHTML = `
           <label style="margin-top: 10px; font-size: 0.9em;">
             Personas (Máx. ${item.max_personas || 2}):
@@ -137,8 +154,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // 2. LÓGICA PARA HOTELES: Selector de Fechas (¡ESTO ES LO QUE FALTABA!)
       // Agregamos las clases 'fecha-inicio' y 'fecha-fin' que busca tu función reservar
-      let inputsFechasHTML = '';
-      if (item.tipo.includes('Hotel')) {
+      let inputsFechasHTML = "";
+      if (item.tipo.includes("Hotel")) {
         inputsFechasHTML = `
            <div class="grid" style="margin-top: 10px;">
              <label>
@@ -153,19 +170,29 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
       }
 
+      const safeImagen = escapeHTML(item.imagen);
+      const safeTipo = escapeHTML(item.tipo);
+      const safeServicio = escapeHTML(item.servicio);
+      const safeNombreAgencia = escapeHTML(
+        item.nombre_agencia || "Agencia KIS",
+      );
+      const safeDescripcion = escapeHTML(item.descripcion);
+      const safeHorario = escapeHTML(item.horario);
+      const safeAlt = escapeHTML(`${item.tipo} ${item.servicio}`);
+
       const itemHTML = `
         <article>
-          <img src="${item.imagen}" alt="${item.tipo} ${item.servicio}" style="width: 100%; height: 200px; object-fit: cover; margin-bottom: 1rem; border-radius: var(--border-radius);" loading="lazy">
+          <img src="${safeImagen}" alt="${safeAlt}" style="width: 100%; height: 200px; object-fit: cover; margin-bottom: 1rem; border-radius: var(--border-radius);" loading="lazy">
           <header>
             <small style="color: gray; text-transform: uppercase; font-size: 0.7em;">
-                Ofrecido por: <strong>${item.nombre_agencia || 'Agencia KIS'}</strong>
+                Ofrecido por: <strong>${safeNombreAgencia}</strong>
             </small>
             <br>
-            <strong>${item.tipo} - ${item.servicio}</strong>
+            <strong>${safeTipo} - ${safeServicio}</strong>
           </header>
           
-          <p>${item.descripcion}</p>
-          <p><em>Horario: ${item.horario}</em></p>
+          <p>${safeDescripcion}</p>
+          <p><em>Horario: ${safeHorario}</em></p>
           
           <p><small>Disponibles: ${item.stock}</small></p>
 
@@ -177,7 +204,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             <button 
                 style="float: right;" 
-                onclick="reservar('${item.tipo}', ${item.id}, '${item.servicio}', this)">
+                onclick='reservar(${JSON.stringify(item.tipo)}, ${item.id}, ${JSON.stringify(item.servicio)}, this)'>
               Reservar
             </button>
           </footer>
@@ -188,23 +215,32 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-// Función global para reservar
+// Función global para reservar (AHORA CON SEGURIDAD JWT Y CSRF)
 async function reservar(tipoRaw, id, nombreServicio, btnElement) {
-  const usuarioGuardado = localStorage.getItem('usuario_agencia');
-  if (!usuarioGuardado) {
+  const tokenJWT = localStorage.getItem("jwt_token");
+  if (!tokenJWT) {
     alert("Debes iniciar sesión para reservar");
     window.location.href = "login.html";
     return;
   }
-  const usuario = JSON.parse(usuarioGuardado);
+
+  let usuario;
+  try {
+    usuario = JSON.parse(
+      window.atob(tokenJWT.split(".")[1].replace(/-/g, "+").replace(/_/g, "/")),
+    );
+  } catch (e) {
+    alert("Sesión inválida.");
+    window.location.href = "login.html";
+    return;
+  }
 
   // LÓGICA DE FECHAS (Punto 4: Rango de fechas para Hoteles)
   let detallesExtra = "";
-  if (tipoRaw.includes('Hotel')) {
-    // Buscamos los inputs dentro de la misma tarjeta (<article>) del botón presionado
-    const article = btnElement.closest('article');
-    const inicio = article.querySelector('.fecha-inicio').value;
-    const fin = article.querySelector('.fecha-fin').value;
+  if (tipoRaw.includes("Hotel")) {
+    const article = btnElement.closest("article");
+    const inicio = article.querySelector(".fecha-inicio").value;
+    const fin = article.querySelector(".fecha-fin").value;
 
     if (!inicio || !fin) {
       alert("Por favor selecciona las fechas de entrada y salida.");
@@ -217,71 +253,84 @@ async function reservar(tipoRaw, id, nombreServicio, btnElement) {
     detallesExtra = ` (Del ${inicio} al ${fin})`;
   }
 
-  // Normalizar tipo para el backend ('vuelo', 'hotel', 'bus')
-  let tipoBackend = 'vuelo';
-  if (tipoRaw.includes('Hotel')) tipoBackend = 'hotel';
-  if (tipoRaw.includes('Autobús') || tipoRaw.includes('Bus')) tipoBackend = 'bus';
+  let tipoBackend = "vuelo";
+  if (tipoRaw.includes("Hotel")) tipoBackend = "hotel";
+  if (tipoRaw.includes("Autobús") || tipoRaw.includes("Bus"))
+    tipoBackend = "bus";
 
   const detalles = `${tipoRaw}: ${nombreServicio}${detallesExtra}`;
 
   if (!confirm(`¿Confirmar reserva de: ${detalles}?`)) return;
 
   try {
-    const res = await fetch('/api/agencia/reservas', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+    // 1. Pedir el token CSRF
+    const resCsrf = await fetch("/api/agencia/csrf-token");
+    const dataCsrf = await resCsrf.json();
+
+    // 2. Enviar petición blindada
+    const res = await fetch("/api/agencia/reservas", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${tokenJWT}`,
+        "X-CSRFToken": dataCsrf.csrf_token,
+      },
       body: JSON.stringify({
         email: usuario.email,
         tipo_servicio: tipoBackend,
         id_servicio: id,
-        detalles: detalles
-      })
+        detalles: detalles,
+      }),
     });
 
     const data = await res.json();
 
     if (res.ok) {
       alert("¡Reserva exitosa! Se ha descontado de nuestro inventario.");
-      // Recargamos la búsqueda para que el usuario vea que el stock bajó
-      document.getElementById('form-busqueda').dispatchEvent(new Event('submit'));
+      document
+        .getElementById("form-busqueda")
+        .dispatchEvent(new Event("submit"));
     } else {
       alert("Error: " + (data.error || "No se pudo reservar"));
     }
-  } catch (e) { console.error(e); alert("Error de conexión"); }
+  } catch (e) {
+    console.error(e);
+    alert("Error de conexión");
+  }
 }
 
 async function probarSeguridadReserva() {
-    // 1. Obtener el JWT guardado
-    const jwt = localStorage.getItem('jwt_token');
-    if (!jwt) {
-        alert("Debes iniciar sesión primero");
-        return;
+  // 1. Obtener el JWT guardado
+  const jwt = localStorage.getItem("jwt_token");
+  if (!jwt) {
+    alert("Debes iniciar sesión primero");
+    return;
+  }
+
+  // 2. Obtener el Token CSRF del servidor
+  const resCsrf = await fetch("/api/agencia/csrf-token");
+  const dataCsrf = await resCsrf.json();
+  const csrfToken = dataCsrf.csrf_token;
+
+  // 3. Hacer la petición POST protegida
+  try {
+    const response = await fetch("/api/agencia/reservas", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${jwt}`, // <-- Escudo 1: Identidad
+        "X-CSRFToken": csrfToken, // <-- Escudo 2: Protección CSRF
+      },
+      body: JSON.stringify({ vuelo_id: 101, destino: "Cancún" }),
+    });
+
+    const data = await response.json();
+    if (response.ok) {
+      alert("Éxito: " + data.mensaje);
+    } else {
+      alert("Error de seguridad: " + data.error);
     }
-
-    // 2. Obtener el Token CSRF del servidor
-    const resCsrf = await fetch('/api/agencia/csrf-token');
-    const dataCsrf = await resCsrf.json();
-    const csrfToken = dataCsrf.csrf_token;
-
-    // 3. Hacer la petición POST protegida
-    try {
-        const response = await fetch('/api/agencia/reservas', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${jwt}`,     // <-- Escudo 1: Identidad
-                'X-CSRFToken': csrfToken              // <-- Escudo 2: Protección CSRF
-            },
-            body: JSON.stringify({ vuelo_id: 101, destino: "Cancún" })
-        });
-
-        const data = await response.json();
-        if (response.ok) {
-            alert("Éxito: " + data.mensaje);
-        } else {
-            alert("Error de seguridad: " + data.error);
-        }
-    } catch (error) {
-        console.error("Error en la petición:", error);
-    }
+  } catch (error) {
+    console.error("Error en la petición:", error);
+  }
 }

@@ -1,134 +1,122 @@
 <!DOCTYPE html>
 <html lang="es" data-theme="light">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css" />
-    <title>Acceso - DaLi</title>
-    <style>
-      :root {
-        --pico-primary: #0069d9;
-        --pico-primary-background: #0056b3;
-        --pico-primary-underline: #0069d9;
-        --pico-border-radius: 0.5rem;
-      }
-      article {
-        box-shadow: 0 4px 15px rgba(0, 105, 217, 0.15);
-        border: 1px solid #e1eaf5;
-        margin-top: 2rem;
-      }
-      nav strong {
-        color: var(--pico-primary);
-      }
-    </style>
-  </head>
-  <body>
-    <header class="container-fluid grid">
-      <hgroup>
-        <h1>🔐 Acceso Seguro</h1>
-        <h2>Gestiona tus viajes y servicios.</h2>
-      </hgroup>
-      <nav style="justify-self: flex-end">
-        <ul>
-          <li><a href="index.html" class="secondary">Volver al Inicio</a></li>
-        </ul>
-      </nav>
-    </header>
 
-    <main class="container">
-      <article>
-        <header style="text-align: center">
-          <strong>Ingresa tus credenciales</strong>
-        </header>
-        <form id="login-form">
-          <label
-            >Email
-            <input
-              type="email"
-              id="email"
-              placeholder="nombre@correo.com"
-              required
-          /></label>
-          <label
-            >Contraseña <input type="password" id="password" required
-          /></label>
-          <p
-            id="error-message"
-            style="color: #d93535; display: none; text-align: center"></p>
-          <button type="submit" class="contrast">Entrar</button>
-        </form>
-        <footer style="text-align: center">
-          <small
-            >¿No tienes cuenta?
-            <a href="register.html">Regístrate aquí</a></small
-          >
-        </footer>
-      </article>
-    </main>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="shortcut icon" href="agencia-de-viajes.ico" type="image/x-icon">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css" />
+  <title>Acceso - DaLi</title>
+  <style>
+    :root {
+      --pico-primary: #0069d9;
+      --pico-primary-background: #0056b3;
+      --pico-primary-underline: #0069d9;
+      --pico-border-radius: 0.5rem;
+    }
 
-    <script>
-      document.getElementById('login-form').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
-        // Nuevo campo que quizás agreguemos dinámicamente o ya esté en el HTML oculto
-        let codigo2fa = document.getElementById('input-2fa') ? document.getElementById('input-2fa').value : null;
-        
-        const errMsg = document.getElementById('error-message');
+    article {
+      box-shadow: 0 4px 15px rgba(0, 105, 217, 0.15);
+      border: 1px solid #e1eaf5;
+      margin-top: 2rem;
+    }
 
-        try {
-          const res = await fetch('/api/agencia/login', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ email, password, codigo_2fa: codigo2fa })
-          });
-          const data = await res.json();
+    nav strong {
+      color: var(--pico-primary);
+    }
+  </style>
+</head>
 
-          // CASO ESPECIAL: 2FA REQUERIDO
-          if (data.requiere_2fa) {
-             errMsg.style.display = 'none';
-             mostrarInput2FA(); // Función visual
-             alert("Por favor ingresa el código de tu Authenticator");
-             return; 
-          }
+<body>
+  <header class="container-fluid grid">
+    <hgroup>
+      <h1>🔐 Acceso Seguro</h1>
+      <h2>Gestiona tus viajes y servicios.</h2>
+    </hgroup>
+    <nav style="justify-self: flex-end">
+      <ul>
+        <li><a href="index.html" class="secondary">Volver al Inicio</a></li>
+      </ul>
+    </nav>
+  </header>
 
-          if (res.ok) {
-            // Guardamos el usuario Y el token en localStorage
-             localStorage.setItem('jwt_token', data.token); // <-- NUEVO
-             localStorage.setItem('usuario_agencia', JSON.stringify({
-                id: data.id,
-                email: data.email,
-                tipo: data.tipo_usuario
-            }));
-            
-            if (data.tipo_usuario === 'agencia' || data.tipo_usuario === 'admin') {
-                window.location.href = 'subidaServicios.html';
-            } else {
-                window.location.href = 'mis-reservas.html';
-            }
+  <main class="container">
+    <article>
+      <header style="text-align: center">
+        <strong>Ingresa tus credenciales</strong>
+      </header>
+      <form id="login-form">
+        <label>Email
+          <input type="email" id="email" placeholder="nombre@correo.com" required /></label>
+        <label>Contraseña <input type="password" id="password" required /></label>
+        <p id="error-message" style="color: #d93535; display: none; text-align: center"></p>
+        <button type="submit" class="contrast">Entrar</button>
+      </form>
+      <footer style="text-align: center">
+        <small>¿No tienes cuenta?
+          <a href="register.html">Regístrate aquí</a></small>
+      </footer>
+    </article>
+  </main>
 
+  <script>
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      // Nuevo campo que quizás agreguemos dinámicamente o ya esté en el HTML oculto
+      let codigo2fa = document.getElementById('input-2fa') ? document.getElementById('input-2fa').value : null;
+
+      const errMsg = document.getElementById('error-message');
+
+      try {
+        const res = await fetch('/api/agencia/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password, codigo_2fa: codigo2fa })
+        });
+        const data = await res.json();
+
+        // CASO ESPECIAL: 2FA REQUERIDO
+        if (data.requiere_2fa) {
+          errMsg.style.display = 'none';
+          mostrarInput2FA(); // Función visual
+          alert("Por favor ingresa el código de tu Authenticator");
+          return;
+        }
+
+        if (res.ok) {
+          // 1. Guardamos SOLO el token seguro
+          localStorage.setItem('jwt_token', data.token);
+          // 2. Guardamos una bandera inofensiva para la interfaz del 2FA
+          if (data.tiene_2fa) localStorage.setItem('2fa_active', 'true');
+
+          if (data.tipo_usuario === 'agencia' || data.tipo_usuario === 'admin') {
+            window.location.href = 'subidaServicios.html';
           } else {
-            errMsg.textContent = data.error || 'Error';
-            errMsg.style.display = 'block';
+            window.location.href = 'mis-reservas.html';
           }
-        } catch (err) { console.error(err); }
-      });
+        } else {
+          errMsg.textContent = data.error || 'Error';
+          errMsg.style.display = 'block';
+        }
+      } catch (err) { console.error(err); }
+    });
 
-      function mostrarInput2FA() {
-          // Si no existe el input, lo creamos debajo del password
-          if(!document.getElementById('input-2fa')) {
-              const label = document.createElement('label');
-              label.innerHTML = `Código 2FA (Authenticator) <input type="text" id="input-2fa" placeholder="000000" required>`;
-              // Insertamos antes del botón de submit
-              const btn = document.querySelector('button[type="submit"]');
-              btn.parentNode.insertBefore(label, btn);
-              
-              // Cambiamos texto del botón
-              btn.textContent = "Verificar y Entrar";
-          }
+    function mostrarInput2FA() {
+      // Si no existe el input, lo creamos debajo del password
+      if (!document.getElementById('input-2fa')) {
+        const label = document.createElement('label');
+        label.innerHTML = `Código 2FA (Authenticator) <input type="text" id="input-2fa" placeholder="000000" required>`;
+        // Insertamos antes del botón de submit
+        const btn = document.querySelector('button[type="submit"]');
+        btn.parentNode.insertBefore(label, btn);
+
+        // Cambiamos texto del botón
+        btn.textContent = "Verificar y Entrar";
       }
-    </script>
-  </body>
+    }
+  </script>
+</body>
+
 </html>

@@ -1,73 +1,100 @@
 <!doctype html>
 <html lang="es" data-theme="light">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
-    <title>Mis Reservas - DaLi</title>
-    <style>
-      :root {
-        --pico-primary: #0069d9;
-        --pico-primary-background: #0056b3;
-        --pico-border-radius: 0.5rem;
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="shortcut icon" href="agencia-de-viajes.ico" type="image/x-icon">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+  <title>Mis Reservas - DaLi</title>
+  <style>
+    :root {
+      --pico-primary: #0069d9;
+      --pico-primary-background: #0056b3;
+      --pico-border-radius: 0.5rem;
+    }
+
+    nav strong {
+      color: var(--pico-primary);
+    }
+
+    /* Estilo especial para tarjetas de reserva */
+    .reserva-card {
+      border-left: 5px solid var(--pico-primary);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+  </style>
+</head>
+
+<body>
+  <header class="container">
+    <hgroup>
+      <h1>📅 Mis Viajes</h1>
+      <h2>Historial de tus reservaciones.</h2>
+    </hgroup>
+  </header>
+
+  <nav class="container">
+    <ul>
+      <li><strong>DaLi</strong></li>
+    </ul>
+    <ul>
+      <li><a href="index.html" class="secondary">Inicio / Buscar</a></li>
+      <li id="nav-logout"><a href="#" role="button" class="outline contrast" onclick="logout()">Salir</a></li>
+    </ul>
+  </nav>
+
+  <main class="container">
+    <div id="lista-reservas">
+      <p aria-busy="true">Cargando tus reservas...</p>
+    </div>
+  </main>
+
+  <script>
+    function logout() {
+      if (confirm("¿Cerrar sesión?")) {
+        localStorage.removeItem('jwt_token');
+        localStorage.removeItem('2fa_active');
+        window.location.href = 'index.html';
       }
-      nav strong { color: var(--pico-primary); }
-      
-      /* Estilo especial para tarjetas de reserva */
-      .reserva-card {
-        border-left: 5px solid var(--pico-primary);
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-      }
-    </style>
-  </head>
-  <body>
-    <header class="container">
-      <hgroup><h1>📅 Mis Viajes</h1><h2>Historial de tus reservaciones.</h2></hgroup>
-    </header>
+    }
 
-    <nav class="container">
-      <ul><li><strong>DaLi</strong></li></ul>
-      <ul>
-        <li><a href="index.html" class="secondary">Inicio / Buscar</a></li>
-        <li id="nav-logout"><a href="#" role="button" class="outline contrast" onclick="logout()">Salir</a></li>
-      </ul>
-    </nav>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const tokenJWT = localStorage.getItem('jwt_token');
+      if (!tokenJWT) { window.location.href = 'login.html'; return; }
 
-    <main class="container">
-      <div id="lista-reservas">
-        <p aria-busy="true">Cargando tus reservas...</p>
-      </div>
-    </main>
+      const container = document.getElementById('lista-reservas');
 
-    <script>
-      function logout() {
-        if(confirm("¿Cerrar sesión?")) {
-            localStorage.removeItem('usuario_agencia');
-            window.location.href = 'index.html';
+      try {
+        // Llamamos al endpoint seguro enviando únicamente el token en las cabeceras
+        const res = await fetch('/api/agencia/mis-reservas', {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${tokenJWT}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        // Si el backend detecta manipulación o expiración, nos saca al login
+        if (res.status === 401) {
+          alert("Sesión inválida o expirada.");
+          localStorage.removeItem('jwt_token');
+          window.location.href = 'login.html';
+          return;
         }
-      }
 
-      document.addEventListener('DOMContentLoaded', async () => {
-        const usuarioGuardado = localStorage.getItem('usuario_agencia');
-        if (!usuarioGuardado) { window.location.href = 'login.html'; return; }
+        const reservas = await res.json();
         
-        const usuario = JSON.parse(usuarioGuardado);
-        const container = document.getElementById('lista-reservas');
+        if (reservas.length === 0) {
+          container.innerHTML = '<article style="text-align:center;">No tienes reservas activas. <br><a href="index.html">¡Planea tu viaje ahora!</a></article>';
+          return;
+        }
 
-        try {
-            const res = await fetch(`/api/agencia/reservas/${usuario.email}`);
-            const reservas = await res.json();
-
-            if (reservas.length === 0) {
-                container.innerHTML = '<article style="text-align:center;">No tienes reservas activas. <br><a href="index.html">¡Planea tu viaje ahora!</a></article>';
-                return;
-            }
-
-            container.innerHTML = reservas.map(r => `
+        container.innerHTML = reservas.map(r => `
                 <article class="reserva-card">
                     <header>
-                        <strong>#${r.id}</strong> | <small>${new Date(r.fecha).toLocaleDateString()}</small>
-                        <span style="float: right; font-size: 0.8em; background: #e1eaf5; padding: 2px 8px; border-radius: 4px; color: #0069d9;">${r.tipo.toUpperCase()}</span>
+                        <strong>#${r.id}</strong> | <small>${new Date(r.fecha_reserva).toLocaleDateString()}</small>
+                        <span style="float: right; font-size: 0.8em; background: #e1eaf5; padding: 2px 8px; border-radius: 4px; color: #0069d9;">${r.tipo_servicio.toUpperCase()}</span>
                     </header>
                     <h4 style="margin-bottom: 0;">${r.detalles}</h4>
                     <footer style="margin-top: 1rem;">
@@ -76,11 +103,12 @@
                 </article>
             `).join('');
 
-        } catch (e) {
-            container.innerHTML = '<p style="color: red">Error al cargar reservas.</p>';
-            console.error(e);
-        }
-      });
-    </script>
-  </body>
+      } catch (e) {
+        container.innerHTML = '<p style="color: red">Error al cargar reservas.</p>';
+        console.error(e);
+      }
+    });
+  </script>
+</body>
+
 </html>

@@ -1,4 +1,6 @@
 import os
+import jwt
+from functools import wraps
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from sqlalchemy import create_engine, text
@@ -14,6 +16,24 @@ db_user = os.environ.get('DB_USER')
 db_password = os.environ.get('DB_PASSWORD')
 db_name = os.environ.get('DB_NAME')
 db_url = f"mysql+pymysql://{db_user}:{db_password}@{db_host}/{db_name}"
+
+app.config["SECRET_KEY"] = os.environ.get("JWT_SECRET", "llave_por_defecto_insegura")
+
+def token_requerido(f):
+    @wraps(f)
+    def decorado(*args, **kwargs):
+        token = None
+        if "Authorization" in request.headers:
+            token = request.headers["Authorization"].split(" ")[1]
+        if not token:
+            return jsonify({"error": "Falta el token de autenticación (JWT)"}), 401
+        try:
+            datos = jwt.decode(token, app.config["SECRET_KEY"], algorithms=["HS256"])
+        except Exception as e:
+            return jsonify({"error": "Token inválido o expirado"}), 401
+        return f(datos, *args, **kwargs)
+
+    return decorado
 
 def esperar_por_bd():
     print("API Hoteles: Esperando...")
@@ -52,8 +72,9 @@ def inicializar_bd():
                     horario_checkin VARCHAR(100)
                 );
             """))
-            
-            if conn.execute(text("SELECT COUNT(*) FROM hoteles")).fetchone()[0] == 0:
+
+            row = conn.execute(text("SELECT COUNT(*) FROM hoteles")).fetchone()
+            if row and row[0] == 0:
                 print("API Hoteles: Insertando datos...")
                 conn.execute(text("""
                     INSERT INTO hoteles (id_agencia,nombre_agencia,nombre_hotel, ciudad, descripcion_habitacion, precio_noche, habitaciones_disponibles, max_personas, imagen_url, horario_checkin)
@@ -72,7 +93,8 @@ def home():
 
 # --- GET: Obtener Hoteles ---
 @app.route('/api/v1/hoteles', methods=['GET'])
-def get_hoteles():
+@token_requerido
+def get_hoteles(datos_usuario):
     filtro_agencia = request.args.get('id_agencia')
     
     try:
@@ -105,7 +127,8 @@ def get_hoteles():
 
 # --- POST: Crear Hotel (Admin) ---
 @app.route('/api/v1/hoteles', methods=['POST'])
-def create_hotel():
+@token_requerido
+def create_hotel(datos_usuario):
     data = request.get_json()
     try:
         with engine.connect() as conn:
@@ -132,7 +155,8 @@ def create_hotel():
 
 # --- ENDPOINT: RESTAR STOCK HOTEL ---
 @app.route('/api/v1/hoteles/<int:id>/reservar', methods=['POST'])
-def reservar_stock(id):
+@token_requerido
+def reservar_stock(datos_usuario, id):
     try:
         with engine.connect() as conn:
             result = conn.execute(text("""
@@ -151,7 +175,8 @@ def reservar_stock(id):
 
 # --- BORRAR HOTEL ---
 @app.route('/api/v1/hoteles/<int:id>', methods=['DELETE'])
-def delete_hotel(id):
+@token_requerido
+def delete_hotel(datos_usuario, id):
     data = request.get_json()
     id_agencia_solicitante = data.get('id_agencia')
     es_admin = data.get('es_admin', False)

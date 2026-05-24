@@ -1,145 +1,135 @@
 <!DOCTYPE html>
 <html lang="es" data-theme="light">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css" />
-    <title>Registro - DaLi</title>
-    <style>
-      :root {
-        --pico-primary: #0069d9;
-        --pico-primary-background: #0056b3;
-        --pico-border-radius: 0.5rem;
-      }
-      article {
-        box-shadow: 0 4px 15px rgba(0, 105, 217, 0.15);
-        border: 1px solid #e1eaf5;
-      }
-      nav strong {
-        color: var(--pico-primary);
-      }
-    </style>
-  </head>
-  <body>
-    <header class="container-fluid grid">
-      <hgroup>
-        <h1>📝 Crear Cuenta</h1>
-        <h2>Únete a la comunidad de DaLi.</h2>
-      </hgroup>
-      <nav style="justify-self: flex-end">
-        <ul>
-          <li><a href="index.html" class="secondary">Inicio</a></li>
-          <li><a href="login.html" role="button" class="outline">Login</a></li>
-        </ul>
-      </nav>
-    </header>
-    <main class="container">
-      <article>
-        <header><strong>Datos de Registro</strong></header>
-        <form id="register-form">
-          <label for="email"
-            >Correo Electrónico
-            <input type="email" id="email" name="email" required />
-          </label>
-          <label for="password"
-            >Contraseña
-            <input type="password" id="password" name="password" required />
-          </label>
 
-          <hr />
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="shortcut icon" href="agencia-de-viajes.ico" type="image/x-icon">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css" />
+  <title>Registro - DaLi</title>
+  <style>
+    :root {
+      --pico-primary: #0069d9;
+      --pico-primary-background: #0056b3;
+      --pico-border-radius: 0.5rem;
+    }
 
-          <label>
-            <input
-              type="checkbox"
-              id="es-agencia"
-              onchange="toggleNombreAgencia()" />
-            Quiero registrar mi <strong>Agencia de Viajes</strong>
-          </label>
+    article {
+      box-shadow: 0 4px 15px rgba(0, 105, 217, 0.15);
+      border: 1px solid #e1eaf5;
+    }
 
-          <label
-            for="nombre-agencia"
-            id="container-nombre-agencia"
-            style="
+    nav strong {
+      color: var(--pico-primary);
+    }
+  </style>
+</head>
+
+<body>
+  <header class="container-fluid grid">
+    <hgroup>
+      <h1>📝 Crear Cuenta</h1>
+      <h2>Únete a la comunidad de DaLi.</h2>
+    </hgroup>
+    <nav style="justify-self: flex-end">
+      <ul>
+        <li><a href="index.html" class="secondary">Inicio</a></li>
+        <li><a href="login.html" role="button" class="outline">Login</a></li>
+      </ul>
+    </nav>
+  </header>
+  <main class="container">
+    <article>
+      <header><strong>Datos de Registro</strong></header>
+      <form id="register-form">
+        <label for="email">Correo Electrónico
+          <input type="email" id="email" name="email" required />
+        </label>
+        <label for="password">Contraseña
+          <input type="password" id="password" name="password" required />
+        </label>
+
+        <hr />
+
+        <label>
+          <input type="checkbox" id="es-agencia" onchange="toggleNombreAgencia()" />
+          Quiero registrar mi <strong>Agencia de Viajes</strong>
+        </label>
+
+        <label for="nombre-agencia" id="container-nombre-agencia" style="
               display: none;
               background: #f0f7ff;
               padding: 10px;
               border-radius: 5px;
             ">
-            Nombre Comercial de la Agencia
-            <input
-              type="text"
-              id="nombre-agencia"
-              name="nombre-agencia"
-              placeholder="Ej. Viajes El Paraíso" />
-          </label>
+          Nombre Comercial de la Agencia
+          <input type="text" id="nombre-agencia" name="nombre-agencia" placeholder="Ej. Viajes El Paraíso" />
+        </label>
 
-          <p
-            id="mensaje"
-            style="display: none; text-align: center; margin-top: 10px"></p>
-          <button type="submit" style="margin-top: 1rem">Registrarse</button>
-        </form>
-      </article>
-    </main>
+        <p id="mensaje" style="display: none; text-align: center; margin-top: 10px"></p>
+        <button type="submit" style="margin-top: 1rem">Registrarse</button>
+      </form>
+    </article>
+  </main>
 
-    <script>
-      function toggleNombreAgencia() {
-        const check = document.getElementById("es-agencia");
-        const container = document.getElementById("container-nombre-agencia");
-        container.style.display = check.checked ? "block" : "none";
-      }
+  <script>
+    function toggleNombreAgencia() {
+      const check = document.getElementById("es-agencia");
+      const container = document.getElementById("container-nombre-agencia");
+      container.style.display = check.checked ? "block" : "none";
+    }
 
-      document
-        .getElementById("register-form")
-        .addEventListener("submit", async (e) => {
-          e.preventDefault();
-          const email = document.getElementById("email").value;
-          const password = document.getElementById("password").value;
-          const esAgencia = document.getElementById("es-agencia").checked;
-          const nombreAgencia = document.getElementById("nombre-agencia").value;
-          const msg = document.getElementById("mensaje");
+    document
+      .getElementById("register-form")
+      .addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const email = document.getElementById("email").value;
+        const password = document.getElementById("password").value;
+        const esAgencia = document.getElementById("es-agencia").checked;
+        const nombreAgencia = document.getElementById("nombre-agencia").value;
+        const msg = document.getElementById("mensaje");
 
-          try {
-            console.log("Enviando petición a Flask...");
-            const res = await fetch("/api/agencia/register", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                email,
-                password,
-                es_agencia: esAgencia,
-                nombre_agencia: nombreAgencia,
-              }),
-            });
+        try {
+          console.log("Enviando petición a Flask...");
+          const res = await fetch("/api/agencia/register", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              email,
+              password,
+              es_agencia: esAgencia,
+              nombre_agencia: nombreAgencia,
+            }),
+          });
 
-            console.log("Status HTTP devuelto:", res.status);
-            
-            // MAGIA: Leemos la respuesta como texto crudo primero para que no explote
-            const textData = await res.text(); 
-            console.log("Respuesta CRUDA del servidor:", textData);
+          console.log("Status HTTP devuelto:", res.status);
 
-            if (res.ok) {
-              alert("¡Cuenta creada con éxito! Ahora inicia sesión.");
-              window.location.href = "login.html";
-            } else {
-              // Si no fue OK, intentamos ver si es un JSON con tu mensaje de error
-              msg.style.color = "#d93535";
-              msg.style.display = "block";
-              try {
-                  const jsonData = JSON.parse(textData);
-                  msg.textContent = jsonData.error || "Error al registrarse";
-              } catch(parseError) {
-                  // Si falla al parsear, es porque el servidor mandó HTML (Ej. 502 Bad Gateway)
-                  msg.textContent = "Error del servidor (" + res.status + "). Revisa la consola.";
-              }
+          // MAGIA: Leemos la respuesta como texto crudo primero para que no explote
+          const textData = await res.text();
+          console.log("Respuesta CRUDA del servidor:", textData);
+
+          if (res.ok) {
+            alert("¡Cuenta creada con éxito! Ahora inicia sesión.");
+            window.location.href = "login.html";
+          } else {
+            // Si no fue OK, intentamos ver si es un JSON con tu mensaje de error
+            msg.style.color = "#d93535";
+            msg.style.display = "block";
+            try {
+              const jsonData = JSON.parse(textData);
+              msg.textContent = jsonData.error || "Error al registrarse";
+            } catch (parseError) {
+              // Si falla al parsear, es porque el servidor mandó HTML (Ej. 502 Bad Gateway)
+              msg.textContent = "Error del servidor (" + res.status + "). Revisa la consola.";
             }
-          } catch (err) {
-            // Si cae aquí, es un error de red o de que el servidor no existe
-            console.error("ERROR CAPTURADO EN EL CATCH:", err.message, err);
-            alert("Error de conexión puro. Revisa la consola.");
           }
-        });
-    </script>
-  </body>
+        } catch (err) {
+          // Si cae aquí, es un error de red o de que el servidor no existe
+          console.error("ERROR CAPTURADO EN EL CATCH:", err.message, err);
+          alert("Error de conexión puro. Revisa la consola.");
+        }
+      });
+  </script>
+</body>
+
 </html>

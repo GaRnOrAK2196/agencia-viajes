@@ -24,6 +24,7 @@ services:
       DB_USER: user_agencia
       DB_PASSWORD: pass_agencia
       DB_NAME: db_agencia
+      JWT_SECRET: Super_Secreto_Agencia_2026_No_Compartir
     depends_on:
       - db_agencia # La API depende de que su BBDD esté lista
 
@@ -36,6 +37,7 @@ services:
       DB_USER: user_aviones
       DB_PASSWORD: pass_aviones
       DB_NAME: db_aviones
+      JWT_SECRET: Super_Secreto_Agencia_2026_No_Compartir
     depends_on:
       - db_aviones
 
@@ -47,6 +49,7 @@ services:
       DB_USER: user_hoteles
       DB_PASSWORD: pass_hoteles
       DB_NAME: db_hoteles
+      JWT_SECRET: Super_Secreto_Agencia_2026_No_Compartir
     depends_on:
       - db_hoteles
 
@@ -58,6 +61,7 @@ services:
       DB_USER: user_buses
       DB_PASSWORD: pass_buses
       DB_NAME: db_buses
+      JWT_SECRET: Super_Secreto_Agencia_2026_No_Compartir
     depends_on:
       - db_buses
 

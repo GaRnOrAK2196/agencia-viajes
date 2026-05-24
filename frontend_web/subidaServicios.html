@@ -1,333 +1,292 @@
 <!DOCTYPE html>
 <html lang="es" data-theme="light">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css" />
-    <title>Gestión - DaLi</title>
-    <style>
-      :root {
-        --pico-primary: #0069d9;
-        --pico-primary-background: #0056b3;
-        --pico-border-radius: 0.5rem;
-      }
-      nav strong {
-        color: var(--pico-primary);
-      }
 
-      /* Estilos para las secciones */
-      section {
-        background: #fff;
-        border: 1px solid #e1eaf5;
-        border-radius: 8px;
-        padding: 1.5rem;
-        margin-bottom: 2rem;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-      }
-      section header {
-        border-bottom: 2px solid #f0f7ff;
-        padding-bottom: 10px;
-        margin-bottom: 15px;
-      }
-      table {
-        margin-bottom: 0;
-      }
-    </style>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="shortcut icon" href="agencia-de-viajes.ico" type="image/x-icon">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css" />
+  <title>Gestión - DaLi</title>
+  <style>
+    :root {
+      --pico-primary: #0069d9;
+      --pico-primary-background: #0056b3;
+      --pico-border-radius: 0.5rem;
+    }
 
-    <script>
-      const usuarioGuardado = localStorage.getItem("usuario_agencia");
-      if (!usuarioGuardado) {
-        window.location.href = "login.html";
-      } else {
-        const u = JSON.parse(usuarioGuardado);
+    nav strong {
+      color: var(--pico-primary);
+    }
+
+    /* Estilos para las secciones */
+    section {
+      background: #fff;
+      border: 1px solid #e1eaf5;
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    }
+
+    section header {
+      border-bottom: 2px solid #f0f7ff;
+      padding-bottom: 10px;
+      margin-bottom: 15px;
+    }
+
+    table {
+      margin-bottom: 0;
+    }
+  </style>
+
+  <script>
+    const tokenJWT = localStorage.getItem("jwt_token");
+    if (!tokenJWT) {
+      window.location.href = "login.html";
+    } else {
+      try {
+        // Desencriptamos la parte media del JWT (Payload)
+        const u = JSON.parse(window.atob(tokenJWT.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
         if (u.tipo !== "agencia" && u.tipo !== "admin") {
           alert("Acceso exclusivo para colaboradores.");
           window.location.href = "index.html";
         }
+      } catch (e) {
+        window.location.href = "login.html";
       }
-    </script>
-  </head>
-  <body>
-    <header class="container-fluid grid">
-      <hgroup>
-        <h1>🛠️ Panel de Gestión | DaLi</h1>
-        <h2 id="subtitulo-bienvenida">Gestión: Administración Central</h2>
-      </hgroup>
-      <nav style="justify-self: flex-end">
-        <ul>
-          <li><a href="index.html" class="secondary">Ver como Cliente</a></li>
-          <li><a href="#" role="button" class="outline contrast" onclick="logout()">Salir</a></li>
-        </ul>
-      </nav>
-    </header>
+    }
+  </script>
+</head>
 
-    <main class="container">
-      <section>
-        <header
-          style="
+<body>
+  <header class="container-fluid grid">
+    <hgroup>
+      <h1>🛠️ Panel de Gestión | DaLi</h1>
+      <h2 id="subtitulo-bienvenida">Gestión: Administración Central</h2>
+    </hgroup>
+    <nav style="justify-self: flex-end">
+      <ul>
+        <li><a href="index.html" class="secondary">Ver como Cliente</a></li>
+        <li><a href="#" role="button" class="outline contrast" onclick="logout()">Salir</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section>
+      <header style="
             display: flex;
             justify-content: space-between;
             align-items: center;
           ">
-          <h3 style="margin: 0; color: #0069d9">✈️ Mis Vuelos</h3>
-          <button onclick="abrirModal('modal-vuelo')" class="contrast">
-            + Nuevo
-          </button>
-        </header>
-        <div style="overflow-x: auto">
-          <table class="striped">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Agencia</th>
-                <th>Ruta</th>
-                <th>Salida</th>
-                <th>Stock</th>
-                <th>Acción</th>
-              </tr>
-            </thead>
-            <tbody id="tabla-vuelos"></tbody>
-          </table>
-        </div>
-      </section>
+        <h3 style="margin: 0; color: #0069d9">✈️ Mis Vuelos</h3>
+        <button onclick="abrirModal('modal-vuelo')" class="contrast">
+          + Nuevo
+        </button>
+      </header>
+      <div style="overflow-x: auto">
+        <table class="striped">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Agencia</th>
+              <th>Ruta</th>
+              <th>Salida</th>
+              <th>Stock</th>
+              <th>Acción</th>
+            </tr>
+          </thead>
+          <tbody id="tabla-vuelos"></tbody>
+        </table>
+      </div>
+    </section>
 
-      <section>
-        <header
-          style="
+    <section>
+      <header style="
             display: flex;
             justify-content: space-between;
             align-items: center;
           ">
-          <h3 style="margin: 0; color: #0069d9">🏨 Mis Hoteles</h3>
-          <button onclick="abrirModal('modal-hotel')" class="contrast">
-            + Nuevo
-          </button>
-        </header>
-        <div style="overflow-x: auto">
-          <table class="striped">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Agencia</th>
-                <th>Hotel</th>
-                <th>Ciudad</th>
-                <th>Stock</th>
-                <th>Acción</th>
-              </tr>
-            </thead>
-            <tbody id="tabla-hoteles"></tbody>
-          </table>
-        </div>
-      </section>
+        <h3 style="margin: 0; color: #0069d9">🏨 Mis Hoteles</h3>
+        <button onclick="abrirModal('modal-hotel')" class="contrast">
+          + Nuevo
+        </button>
+      </header>
+      <div style="overflow-x: auto">
+        <table class="striped">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Agencia</th>
+              <th>Hotel</th>
+              <th>Ciudad</th>
+              <th>Stock</th>
+              <th>Acción</th>
+            </tr>
+          </thead>
+          <tbody id="tabla-hoteles"></tbody>
+        </table>
+      </div>
+    </section>
 
-      <section>
-        <header
-          style="
+    <section>
+      <header style="
             display: flex;
             justify-content: space-between;
             align-items: center;
           ">
-          <h3 style="margin: 0; color: #0069d9">🚌 Mis Autobuses</h3>
-          <button onclick="abrirModal('modal-bus')" class="contrast">
-            + Nuevo
-          </button>
-        </header>
-        <div style="overflow-x: auto">
-          <table class="striped">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Agencia</th>
-                <th>Ruta</th>
-                <th>Salida</th>
-                <th>Stock</th>
-                <th>Acción</th>
-              </tr>
-            </thead>
-            <tbody id="tabla-buses"></tbody>
-          </table>
+        <h3 style="margin: 0; color: #0069d9">🚌 Mis Autobuses</h3>
+        <button onclick="abrirModal('modal-bus')" class="contrast">
+          + Nuevo
+        </button>
+      </header>
+      <div style="overflow-x: auto">
+        <table class="striped">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Agencia</th>
+              <th>Ruta</th>
+              <th>Salida</th>
+              <th>Stock</th>
+              <th>Acción</th>
+            </tr>
+          </thead>
+          <tbody id="tabla-buses"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <dialog id="modal-vuelo">
+    <article>
+      <header>
+        <button aria-label="Close" rel="prev" onclick="cerrarModal('modal-vuelo')"></button>
+        <h3>Nuevo Vuelo</h3>
+      </header>
+      <form onsubmit="crearServicio(event, 'vuelo')">
+        <div class="grid">
+          <input type="text" name="nombre" placeholder="Aerolínea" required />
+          <input type="number" name="precio" placeholder="Precio ($)" required />
         </div>
-      </section>
-    </main>
+        <div class="grid">
+          <input type="text" name="origen" placeholder="Origen" required />
+          <input type="text" name="destino" placeholder="Destino" required />
+        </div>
+        <label>Fecha y Hora <input type="datetime-local" name="fecha" required /></label>
+        <input type="number" name="stock" placeholder="Asientos Disponibles" required />
+        <input type="text" name="imagen" placeholder="URL de Imagen" required />
+        <input type="text" name="descripcion" placeholder="Descripción breve" required />
+        <button type="submit">Guardar</button>
+      </form>
+    </article>
+  </dialog>
 
-    <dialog id="modal-vuelo">
-      <article>
-        <header>
-          <button
-            aria-label="Close"
-            rel="prev"
-            onclick="cerrarModal('modal-vuelo')"></button>
-          <h3>Nuevo Vuelo</h3>
-        </header>
-        <form onsubmit="crearServicio(event, 'vuelo')">
-          <div class="grid">
-            <input type="text" name="nombre" placeholder="Aerolínea" required />
-            <input
-              type="number"
-              name="precio"
-              placeholder="Precio ($)"
-              required />
-          </div>
-          <div class="grid">
-            <input type="text" name="origen" placeholder="Origen" required />
-            <input type="text" name="destino" placeholder="Destino" required />
-          </div>
-          <label
-            >Fecha y Hora <input type="datetime-local" name="fecha" required
-          /></label>
-          <input
-            type="number"
-            name="stock"
-            placeholder="Asientos Disponibles"
-            required />
-          <input
-            type="text"
-            name="imagen"
-            placeholder="URL de Imagen"
-            required />
-          <input
-            type="text"
-            name="descripcion"
-            placeholder="Descripción breve"
-            required />
-          <button type="submit">Guardar</button>
-        </form>
-      </article>
-    </dialog>
+  <dialog id="modal-hotel">
+    <article>
+      <header>
+        <button aria-label="Close" rel="prev" onclick="cerrarModal('modal-hotel')"></button>
+        <h3>Nuevo Hotel</h3>
+      </header>
+      <form onsubmit="crearServicio(event, 'hotel')">
+        <div class="grid">
+          <input type="text" name="nombre" placeholder="Nombre Hotel" required />
+          <input type="text" name="ciudad" placeholder="Ciudad" required />
+        </div>
+        <div class="grid">
+          <input type="number" name="precio" placeholder="Precio/Noche" required />
+          <input type="number" name="stock" placeholder="Habitaciones" required />
+        </div>
+        <div class="grid">
+          <input type="number" name="max_personas" placeholder="Max Pers." value="2" required />
+          <input type="text" name="horario" placeholder="Horario Check-in" required />
+        </div>
+        <input type="text" name="imagen" placeholder="URL de Imagen" required />
+        <input type="text" name="descripcion" placeholder="Descripción" required />
+        <button type="submit">Guardar</button>
+      </form>
+    </article>
+  </dialog>
 
-    <dialog id="modal-hotel">
-      <article>
-        <header>
-          <button
-            aria-label="Close"
-            rel="prev"
-            onclick="cerrarModal('modal-hotel')"></button>
-          <h3>Nuevo Hotel</h3>
-        </header>
-        <form onsubmit="crearServicio(event, 'hotel')">
-          <div class="grid">
-            <input
-              type="text"
-              name="nombre"
-              placeholder="Nombre Hotel"
-              required />
-            <input type="text" name="ciudad" placeholder="Ciudad" required />
-          </div>
-          <div class="grid">
-            <input
-              type="number"
-              name="precio"
-              placeholder="Precio/Noche"
-              required />
-            <input
-              type="number"
-              name="stock"
-              placeholder="Habitaciones"
-              required />
-          </div>
-          <div class="grid">
-            <input
-              type="number"
-              name="max_personas"
-              placeholder="Max Pers."
-              value="2"
-              required />
-            <input
-              type="text"
-              name="horario"
-              placeholder="Horario Check-in"
-              required />
-          </div>
-          <input
-            type="text"
-            name="imagen"
-            placeholder="URL de Imagen"
-            required />
-          <input
-            type="text"
-            name="descripcion"
-            placeholder="Descripción"
-            required />
-          <button type="submit">Guardar</button>
-        </form>
-      </article>
-    </dialog>
+  <dialog id="modal-bus">
+    <article>
+      <header>
+        <button aria-label="Close" rel="prev" onclick="cerrarModal('modal-bus')"></button>
+        <h3>Nuevo Bus</h3>
+      </header>
+      <form onsubmit="crearServicio(event, 'bus')">
+        <div class="grid">
+          <input type="text" name="nombre" placeholder="Compañía" required />
+          <input type="number" name="precio" placeholder="Precio ($)" required />
+        </div>
+        <div class="grid">
+          <input type="text" name="origen" placeholder="Origen" required />
+          <input type="text" name="destino" placeholder="Destino" required />
+        </div>
+        <label>Fecha y Hora <input type="datetime-local" name="fecha" required /></label>
+        <input type="number" name="stock" placeholder="Asientos" required />
+        <input type="text" name="imagen" placeholder="URL de Imagen" required />
+        <input type="text" name="descripcion" placeholder="Descripción" required />
+        <button type="submit">Guardar</button>
+      </form>
+    </article>
+  </dialog>
 
-    <dialog id="modal-bus">
-      <article>
-        <header>
-          <button
-            aria-label="Close"
-            rel="prev"
-            onclick="cerrarModal('modal-bus')"></button>
-          <h3>Nuevo Bus</h3>
-        </header>
-        <form onsubmit="crearServicio(event, 'bus')">
-          <div class="grid">
-            <input type="text" name="nombre" placeholder="Compañía" required />
-            <input
-              type="number"
-              name="precio"
-              placeholder="Precio ($)"
-              required />
-          </div>
-          <div class="grid">
-            <input type="text" name="origen" placeholder="Origen" required />
-            <input type="text" name="destino" placeholder="Destino" required />
-          </div>
-          <label
-            >Fecha y Hora <input type="datetime-local" name="fecha" required
-          /></label>
-          <input type="number" name="stock" placeholder="Asientos" required />
-          <input
-            type="text"
-            name="imagen"
-            placeholder="URL de Imagen"
-            required />
-          <input
-            type="text"
-            name="descripcion"
-            placeholder="Descripción"
-            required />
-          <button type="submit">Guardar</button>
-        </form>
-      </article>
-    </dialog>
+  <script>
+    function escapeHTML(str) {
+      if (!str) return "";
+      return str
+        .toString()
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
 
-    <script>
-      const usuario = JSON.parse(localStorage.getItem("usuario_agencia"));
-      document.getElementById("subtitulo-bienvenida").innerText = `Gestión: ${
-        usuario.nombre_agencia || "Super Admin"
+    const rawToken = localStorage.getItem("jwt_token");
+    const usuario = JSON.parse(window.atob(rawToken.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+
+    document.getElementById("subtitulo-bienvenida").innerText = `Gestión: ${usuario.email || "Super Admin"
       }`;
 
-      document.addEventListener("DOMContentLoaded", cargarServicios);
+    document.addEventListener("DOMContentLoaded", cargarServicios);
 
-      function cargarServicios() {
-        let queryParams = "";
-        if (usuario.tipo === "agencia") {
-          queryParams = `?id_agencia=${usuario.id}`;
-        }
-
-        cargarTabla("/api/vuelos" + queryParams, "tabla-vuelos", "vuelo");
-        cargarTabla("/api/hoteles" + queryParams, "tabla-hoteles", "hotel");
-        cargarTabla("/api/buses" + queryParams, "tabla-buses", "bus");
+    function cargarServicios() {
+      let queryParams = "";
+      if (usuario.tipo === "agencia") {
+        queryParams = `?id_agencia=${usuario.id}`;
       }
 
-      async function cargarTabla(url, tbodyId, tipo) {
-        try {
-            const res = await fetch(url);
-            const data = await res.json();
-            const tbody = document.getElementById(tbodyId);
-            
-            tbody.innerHTML = data.map(item => `
+      cargarTabla("/api/vuelos" + queryParams, "tabla-vuelos", "vuelo");
+      cargarTabla("/api/hoteles" + queryParams, "tabla-hoteles", "hotel");
+      cargarTabla("/api/buses" + queryParams, "tabla-buses", "bus");
+    }
+
+    async function cargarTabla(url, tbodyId, tipo) {
+      try {
+        const tokenJWT = localStorage.getItem("jwt_token");
+        const res = await fetch(url, {
+          headers: tokenJWT ? { "Authorization": `Bearer ${tokenJWT}` } : {}
+        });
+        const data = await res.json();
+        const tbody = document.getElementById(tbodyId);
+
+        tbody.innerHTML = data
+          .map(item => {
+            const safeNombreAgencia = escapeHTML(item.nombre_agencia || 'Admin');
+            const safeServicio = escapeHTML(item.servicio || '');
+            const safeOrigen = escapeHTML(item.origen || '');
+            const safeDestino = escapeHTML(item.destino || '');
+            const safeCiudad = escapeHTML(item.ciudad || '');
+
+            return `
                 <tr>
                     <td>${item.id}</td>
-                    <td><small style="color:gray;">${item.nombre_agencia || 'Admin'}</small></td>
-                    <td>${tipo === 'hotel' ? item.servicio : item.origen + ' ➝ ' + item.destino}</td>
-                    <td>${tipo === 'hotel' ? item.ciudad : new Date(item.fecha).toLocaleString()}</td>
-                    <td><strong style="color:${item.stock < 5 ? 'red':'green'}">${item.stock}</strong></td>
+                    <td><small style="color:gray;">${safeNombreAgencia}</small></td>
+                    <td>${tipo === 'hotel' ? safeServicio : safeOrigen + ' ➝ ' + safeDestino}</td>
+                    <td>${tipo === 'hotel' ? safeCiudad : new Date(item.fecha).toLocaleString()}</td>
+                    <td><strong style="color:${item.stock < 5 ? 'red' : 'green'}">${item.stock}</strong></td>
                     <td>
                         <button 
                             style="background-color: #d93535; border-color: #d93535; padding: 5px 10px; font-size: 0.8em;"
@@ -336,94 +295,110 @@
                         </button>
                     </td>
                 </tr>
-            `).join('');
-        } catch (e) { console.error(e); }
+            `;
+          })
+          .join('');
+      } catch (e) { console.error(e); }
+    }
+
+    async function crearServicio(event, tipo) {
+      event.preventDefault();
+      const form = event.target;
+      const formData = new FormData(form);
+      const data = Object.fromEntries(formData.entries());
+
+      data.id_agencia = usuario.id;
+      data.nombre_agencia = usuario.nombre_agencia || "Admin Central";
+
+      if (tipo !== "hotel" && data.fecha) {
+        const d = new Date(data.fecha);
+        data.fecha = data.fecha.replace("T", " ") + ":00";
+        data.horario = d.toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        });
       }
 
-      async function crearServicio(event, tipo) {
-        event.preventDefault();
-        const form = event.target;
-        const formData = new FormData(form);
-        const data = Object.fromEntries(formData.entries());
-
-        data.id_agencia = usuario.id;
-        data.nombre_agencia = usuario.nombre_agencia || "Admin Central";
-
-        if (tipo !== "hotel" && data.fecha) {
-          const d = new Date(data.fecha);
-          data.fecha = data.fecha.replace("T", " ") + ":00";
-          data.horario = d.toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-          });
-        }
-
-        let url =
-          tipo === "vuelo"
-            ? "/api/vuelos"
-            : tipo === "hotel"
+      let url =
+        tipo === "vuelo"
+          ? "/api/vuelos"
+          : tipo === "hotel"
             ? "/api/hoteles"
             : "/api/buses";
 
-        try {
-          const res = await fetch(url, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(data),
-          });
-          if (res.ok) {
-            alert("¡Servicio Creado!");
-            cerrarModal(`modal-${tipo}`);
-            form.reset();
-            cargarServicios();
-          } else {
-            alert("Error al guardar");
-          }
-        } catch (e) {
-          console.error(e);
+      try {
+        const tokenJWT = localStorage.getItem("jwt_token");
+        const res = await fetch(url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(tokenJWT ? { "Authorization": `Bearer ${tokenJWT}` } : {})
+          },
+          body: JSON.stringify(data),
+        });
+        if (res.ok) {
+          alert("¡Servicio Creado!");
+          cerrarModal(`modal-${tipo}`);
+          form.reset();
+          cargarServicios();
+        } else {
+          alert("Error al guardar");
         }
+      } catch (e) {
+        console.error(e);
       }
+    }
 
-      function logout() {
-        localStorage.removeItem("usuario_agencia");
-        window.location.href = "index.html";
+    function logout() {
+      if (confirm("¿Cerrar sesión?")) {
+        localStorage.removeItem('jwt_token');
+        localStorage.removeItem('2fa_active');
+        window.location.href = 'index.html';
       }
-      function abrirModal(id) {
-        document.getElementById(id).showModal();
-      }
-      function cerrarModal(id) {
-        document.getElementById(id).close();
-      }
+    }
 
-      async function borrarServicio(tipo, id) {
-        if(!confirm("¿Estás seguro de que quieres eliminar este servicio permanentemente?")) return;
+    function abrirModal(id) {
+      document.getElementById(id).showModal();
+    }
 
-        let url = '';
-        if (tipo === 'vuelo') url = `/api/vuelos/${id}`;
-        if (tipo === 'hotel') url = `/api/hoteles/${id}`;
-        if (tipo === 'bus')   url = `/api/buses/${id}`;
+    function cerrarModal(id) {
+      document.getElementById(id).close();
+    }
 
-        const bodyData = {
-            id_agencia: usuario.id,
-            es_admin: (usuario.tipo === 'admin')
-        };
+    async function borrarServicio(tipo, id) {
+      if (!confirm("¿Estás seguro de que quieres eliminar este servicio permanentemente?")) return;
 
-        try {
-            const res = await fetch(url, {
-                method: 'DELETE',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(bodyData)
-            });
+      let url = '';
+      if (tipo === 'vuelo') url = `/api/vuelos/${id}`;
+      if (tipo === 'hotel') url = `/api/hoteles/${id}`;
+      if (tipo === 'bus') url = `/api/buses/${id}`;
 
-            if(res.ok) {
-                alert("Eliminado correctamente");
-                cargarServicios(); // Recargar tabla
-            } else {
-                const err = await res.json();
-                alert("Error: " + (err.error || "No se pudo borrar"));
-            }
-        } catch(e) { console.error(e); alert("Error de conexión"); }
-      }
-    </script>
-  </body>
+      const bodyData = {
+        id_agencia: usuario.id,
+        es_admin: (usuario.tipo === 'admin')
+      };
+
+      try {
+        const tokenJWT = localStorage.getItem("jwt_token");
+        const res = await fetch(url, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(tokenJWT ? { 'Authorization': `Bearer ${tokenJWT}` } : {})
+          },
+          body: JSON.stringify(bodyData)
+        });
+
+        if (res.ok) {
+          alert("Eliminado correctamente");
+          cargarServicios(); // Recargar tabla
+        } else {
+          const err = await res.json();
+          alert("Error: " + (err.error || "No se pudo borrar"));
+        }
+      } catch (e) { console.error(e); alert("Error de conexión"); }
+    }
+  </script>
+</body>
+
 </html>

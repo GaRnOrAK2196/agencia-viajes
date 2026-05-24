@@ -1,58 +1,71 @@
 <!doctype html>
 <html lang="es" data-theme="light">
-  <head>
+
+<head>
     <meta charset="utf-8">
+    <link rel="shortcut icon" href="agencia-de-viajes.ico" type="image/x-icon">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
     <title>Seguridad - Agencia KIS</title>
-  </head>
-  <body>
-    <header class="container"><h1>🔐 Seguridad de la Cuenta</h1></header>
+</head>
+
+<body>
+    <header class="container">
+        <h1>🔐 Seguridad de la Cuenta</h1>
+    </header>
     <nav class="container">
-        <ul><li>Agencia KIS</li></ul>
-        <ul><li><a href="index.html">Volver</a></li></ul>
+        <ul>
+            <li>Agencia KIS</li>
+        </ul>
+        <ul>
+            <li><a href="index.html">Volver</a></li>
+        </ul>
     </nav>
     <main class="container">
-      <article>
-        <header>Autenticación de Dos Factores (2FA)</header>
-        
-        <div id="estado-activo" style="display: none; text-align: center; color: var(--pico-color-green-600);">
-            <h2 style="margin-bottom: 0;">✅ Protegido</h2>
-            <p>Tu autenticación de dos factores está <strong>activa</strong>.</p>
-            <small>Tu cuenta está segura contra accesos no autorizados.</small>
-        </div>
+        <article>
+            <header>Autenticación de Dos Factores (2FA)</header>
 
-        <div id="estado-inactivo">
-            <p>Aumenta la seguridad de tu cuenta usando Google Authenticator.</p>
-            <button id="btn-iniciar-setup" onclick="iniciarSetup()">Configurar 2FA</button>
-        </div>
-
-        <div id="setup-container" style="display: none; margin-top: 20px;">
-            <hr>
-            <h3>1. Escanea este código QR</h3>
-            <div style="text-align: center;">
-                <img id="qr-image" src="" alt="QR Code" style="border: 5px solid white;">
+            <div id="estado-activo" style="display: none; text-align: center; color: var(--pico-color-green-600);">
+                <h2 style="margin-bottom: 0;">✅ Protegido</h2>
+                <p>Tu autenticación de dos factores está <strong>activa</strong>.</p>
+                <small>Tu cuenta está segura contra accesos no autorizados.</small>
             </div>
-            <h3>2. Ingresa el código de 6 dígitos</h3>
-            <input type="text" id="codigo-input" placeholder="Ej. 123456">
-            <button onclick="confirmar2FA()">Activar y Guardar</button>
-        </div>
 
-      </article>
+            <div id="estado-inactivo">
+                <p>Aumenta la seguridad de tu cuenta usando Google Authenticator.</p>
+                <button id="btn-iniciar-setup" onclick="iniciarSetup()">Configurar 2FA</button>
+            </div>
+
+            <div id="setup-container" style="display: none; margin-top: 20px;">
+                <hr>
+                <h3>1. Escanea este código QR</h3>
+                <div style="text-align: center;">
+                    <img id="qr-image" src="" alt="QR Code" style="border: 5px solid white;">
+                </div>
+                <h3>2. Ingresa el código de 6 dígitos</h3>
+                <input type="text" id="codigo-input" placeholder="Ej. 123456">
+                <button onclick="confirmar2FA()">Activar y Guardar</button>
+            </div>
+
+        </article>
     </main>
 
     <script>
-        // 1. LEEMOS EL ESTADO ACTUAL
-        const usuario = JSON.parse(localStorage.getItem('usuario_agencia'));
-        if(!usuario) window.location.href = 'login.html';
+        const tokenJWT = localStorage.getItem('jwt_token');
+        if (!tokenJWT) window.location.href = 'login.html';
 
-        // 2. ACTUALIZAMOS LA VISTA AL CARGAR
+        let usuario;
+        try {
+            usuario = JSON.parse(window.atob(tokenJWT.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+        } catch (e) { window.location.href = 'login.html'; }
+
         actualizarVista();
 
         function actualizarVista() {
             const divActivo = document.getElementById('estado-activo');
             const divInactivo = document.getElementById('estado-inactivo');
+            const tiene2FA = localStorage.getItem('2fa_active');
 
-            if (usuario.tiene_2fa) {
+            if (tiene2FA === 'true') {
                 divActivo.style.display = 'block';
                 divInactivo.style.display = 'none';
             } else {
@@ -66,11 +79,11 @@
         async function iniciarSetup() {
             const res = await fetch('/api/agencia/2fa/setup', {
                 method: 'POST',
-                headers: {'Content-Type': 'application/json'},
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email: usuario.email })
             });
             const data = await res.json();
-            
+
             document.getElementById('qr-image').src = data.qr_image;
             tempSecret = data.secret;
             document.getElementById('setup-container').style.display = 'block';
@@ -81,29 +94,24 @@
             const code = document.getElementById('codigo-input').value;
             const res = await fetch('/api/agencia/2fa/enable', {
                 method: 'POST',
-                headers: {'Content-Type': 'application/json'},
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     user_id: usuario.id,
                     secret: tempSecret,
                     code: code
                 })
             });
-            
-            if(res.ok) {
+
+            if (res.ok) {
                 alert("¡Excelente! Tu cuenta ahora es segura.");
-                
-                // 3. ACTUALIZAMOS LOCALSTORAGE EN TIEMPO REAL
-                usuario.tiene_2fa = true;
-                localStorage.setItem('usuario_agencia', JSON.stringify(usuario));
-                
-                // Recargamos la vista para mostrar la palomita verde
+                localStorage.setItem('2fa_active', 'true');
                 document.getElementById('setup-container').style.display = 'none';
                 actualizarVista();
-
             } else {
                 alert("Código incorrecto.");
             }
         }
     </script>
-  </body>
+</body>
+
 </html>
